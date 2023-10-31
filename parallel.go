@@ -19,6 +19,7 @@ type P struct {
 	OnPanic func(p any) bool
 
 	panicked  atomic.Value
+	finished  atomic.Bool
 	waitgroup sync.WaitGroup
 }
 
@@ -43,6 +44,9 @@ func Do(f func(p *P)) {
 
 // Go starts a new goroutine. If p is already marked as finished, Go will panic.
 func (p *P) Go(f func()) {
+	if p.finished.Load() {
+		panic("parallel: cannot call Go after Do has returned")
+	}
 	p.waitgroup.Add(1)
 	go func() {
 		defer p.waitgroup.Done()
@@ -62,6 +66,9 @@ func (p *P) recover() {
 
 func (p *P) wait() {
 	p.waitgroup.Wait()
+	// note: race here if someone calls p.Go during this comment.
+	// that's ok – they'll likely get a panic eventually to flag the API misuse.
+	p.finished.Store(true)
 	if r := p.panicked.Load(); r != nil {
 		panic(p.panicked.Load())
 	}

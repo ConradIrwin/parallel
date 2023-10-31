@@ -55,6 +55,27 @@ func Test_Parallel_Panic(t *testing.T) {
 	t.Fatal("parallel.Do did not panic")
 }
 
+func Test_Parallel_Misuse(t *testing.T) {
+	var p any
+	func() {
+		defer func() {
+			p = recover()
+		}()
+		var a *parallel.P
+
+		parallel.Do(func(p *parallel.P) {
+			a = p
+		})
+		a.Go(func() {
+			panic("oops")
+		})
+	}()
+
+	if fmt.Sprint(p) != "parallel: cannot call Go after Do has returned" {
+		t.Fatal("parallel.Go panicked with", p)
+	}
+}
+
 var doSomethingElse = func() {}
 var doSomethingSlow = func() {}
 
