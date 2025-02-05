@@ -4,7 +4,6 @@
 // It is designed to help reason about parallel code by ensuring that
 // go-routines are started and stopped in a strictly nested pattern: a child
 // goroutine will never outlive its parent.
-package parallel
 
 import (
 	"sync"
