@@ -10,7 +10,6 @@ import (
 	"sync"
 	"sync/atomic"
 )
-
 // P represents the parallel execution of a set of goroutines.
 type P struct {
 	// OnPanic is called when a goroutine panics. You should return
